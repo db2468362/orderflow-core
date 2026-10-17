@@ -9,7 +9,7 @@ from orderflow_core.exceptions.base import (
     NotFoundError,
 )
 
-DEFAULT_ERROR_MAP: dict[type[ApplicationError], int] = {
+ERROR_MAP: dict[type[ApplicationError], HTTPStatus] = {
     NotFoundError: HTTPStatus.NOT_FOUND,
     ConflictError: HTTPStatus.CONFLICT,
 }
@@ -17,13 +17,13 @@ DEFAULT_ERROR_MAP: dict[type[ApplicationError], int] = {
 
 def register_exception_handlers(
     app: FastAPI,
-    custom_map: dict[type[ApplicationError], int] | None = None,
+    custom_map: dict[type[ApplicationError], HTTPStatus] | None = None,
 ) -> None:
-    error_map = {**DEFAULT_ERROR_MAP, **(custom_map or {})}
+    error_map = {**ERROR_MAP, **(custom_map or {})}
 
     @app.exception_handler(ApplicationError)
     async def application_error_handler(request: Request, exc: ApplicationError) -> JSONResponse:
-        http_status = HTTPStatus.BAD_REQUEST
+        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
         for error_cls, code in error_map.items():
             if isinstance(exc, error_cls):
                 http_status = code

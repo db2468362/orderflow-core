@@ -1,6 +1,6 @@
 [project]
 name = "orderflow-core"
-version = "0.1.0"
+version = "0.2.2"
 description = "Core shared library for OrderFlow microservices"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.110.0",
     "pytest>=8.0.0",
     "pydantic>=2.0.0",
+    "dishka>=1.10.1",
 ]
 
 [build-system]
