@@ -1,0 +1,27 @@
+[project]
+name = "orderflow-core"
+version = "0.1.0"
+description = "Core shared library for OrderFlow microservices"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.110.0",
+    "pytest>=8.0.0",
+    "pydantic>=2.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Автоматическая регистрация pytest-плагина для всех подключающих сервисов
+[project.entry-points."pytest11"]
+orderflow_quality = "orderflow_core.testing.plugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/orderflow_core"]
+
+[dependency-groups]
+dev = [
+    "pystolint>=0.6.1",
+]
