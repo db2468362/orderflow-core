@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from orderflow_core.exceptions.base import (
@@ -22,8 +23,12 @@ def register_exception_handlers(
     error_map = {**ERROR_MAP, **(custom_map or {})}
 
     @app.exception_handler(ApplicationError)
-    async def application_error_handler(request: Request, exc: ApplicationError) -> JSONResponse:
+    async def application_error_handler(
+        request: Request,
+        exc: ApplicationError,
+    ) -> JSONResponse:
         http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+
         for error_cls, code in error_map.items():
             if isinstance(exc, error_cls):
                 http_status = code
@@ -34,5 +39,26 @@ def register_exception_handlers(
             content={
                 'error': exc.__class__.__name__,
                 'message': exc.message,
+            },
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error_handler(
+        request: Request,
+        exc: RequestValidationError,
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            content={
+                'error': 'ValidationError',
+                'message': 'Request validation failed',
+                'details': [
+                    {
+                        'field': '.'.join(map(str, error['loc'])),
+                        'message': error['msg'],
+                        'type': error['type'],
+                    }
+                    for error in exc.errors()
+                ],
             },
         )
